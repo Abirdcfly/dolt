@@ -27,6 +27,10 @@ const (
 	cacheSize = 256 * 1024 * 1024
 )
 
+func HackChunkStoreFromNodeStore(ns NodeStore) chunks.ChunkStore {
+	return ns.(nodeStore).store
+}
+
 // NodeStore reads and writes prolly tree Nodes.
 type NodeStore interface {
 	// Read reads a prolly tree Node from the store.

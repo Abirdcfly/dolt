@@ -573,9 +573,15 @@ func (ddb *DoltDB) CommitDanglingWithParentCommits(ctx context.Context, valHash 
 		}
 		parents = append(parents, addr)
 	}
-
 	commitOpts := datas.CommitOptions{Parents: parents, Meta: cm}
-	dcommit, err := datas.NewCommitForValue(ctx, datas.ChunkStoreFromDatabase(ddb.db), ddb.vrw, ddb.ns, val, commitOpts)
+
+	return ddb.CommitDangling(ctx, val, commitOpts)
+}
+
+func (ddb *DoltDB) CommitDangling(ctx context.Context, val types.Value, opts datas.CommitOptions) (*Commit, error) {
+	cs := datas.ChunkStoreFromDatabase(ddb.db)
+
+	dcommit, err := datas.NewCommitForValue(ctx, cs, ddb.vrw, ddb.ns, val, opts)
 	if err != nil {
 		return nil, err
 	}
