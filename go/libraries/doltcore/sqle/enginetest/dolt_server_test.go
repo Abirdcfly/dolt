@@ -363,7 +363,41 @@ func TestDoltServerRunningUnixSocket(t *testing.T) {
 		require.NoError(t, err)
 		assertResultsEqual(t, []sql.Row{{1}}, rows)
 		require.NoError(t, conn.Close())
+	})
 
+	t.Run("running separate servers for local and using tcp works", func(t *testing.T) {
+		// default connection
+		localConn, localSess := newConnection(t, serverConfig)
+		rows, err := localSess.Query("select 1")
+		require.NoError(t, err)
+		assertResultsEqual(t, []sql.Row{{1}}, rows)
+
+		// connect with port defined
+		serverConfigWithPortOnly := sqlserver.DefaultServerConfig().WithPort(3306)
+		conn1, sess1 := newConnection(t, serverConfigWithPortOnly)
+		rows1, err := sess1.Query("select 1")
+		require.NoError(t, err)
+		assertResultsEqual(t, []sql.Row{{1}}, rows1)
+
+		// connect with host defined
+		serverConfigWithPortandHost := sqlserver.DefaultServerConfig().WithHost("127.0.0.1")
+		conn2, sess2 := newConnection(t, serverConfigWithPortandHost)
+		rows2, err := sess2.Query("select 1")
+		require.NoError(t, err)
+		assertResultsEqual(t, []sql.Row{{1}}, rows2)
+
+		// connect with port and host defined
+		serverConfigWithPortandHost1 := sqlserver.DefaultServerConfig().WithPort(3306).WithHost("0.0.0.0")
+		conn3, sess3 := newConnection(t, serverConfigWithPortandHost1)
+		rows3, err := sess3.Query("select 1")
+		require.NoError(t, err)
+		assertResultsEqual(t, []sql.Row{{1}}, rows3)
+
+		// close connections
+		require.NoError(t, conn3.Close())
+		require.NoError(t, conn2.Close())
+		require.NoError(t, conn1.Close())
+		require.NoError(t, localConn.Close())
 	})
 
 	sc.StopServer()
